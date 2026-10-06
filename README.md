@@ -1,6 +1,6 @@
 # Memetics
 
-Trace the ideas behind your code, and keep up when their implementations evolve.
+Trace the ideas behind your code. Turn relevant upstream implementation changes into PRs.
 
 A GitHub repository depends on more than the packages in its lockfile. Its architecture,
 algorithms, APIs, and small implementation details often come from other repositories,
@@ -13,11 +13,12 @@ Memetics is a project for making those connections explicit and keeping them use
 
 Link a part of your repository to the sources that inspired it. Record what you borrowed,
 why it mattered, which upstream revision you examined, and where the idea appears in your
-own implementation. Watch the relevant upstream code and surface changes worth reviewing.
+own implementation. Set upstream listeners that watch the relevant code and automatically
+open PRs adapting meaningful changes to your repository.
 
 For example, if your cache eviction logic was inspired by another project's implementation,
-a fix to that upstream implementation should lead you back to your own cache code, with the
-original rationale and a link to the upstream diff.
+a fix to that upstream implementation should produce a PR applying the same approach
+to your cache code, with regression tests, the original rationale, and the upstream diff.
 
 ## What a connection records
 
@@ -35,31 +36,55 @@ replace the source's license obligations.
 See [the example manifest](examples/memetics.json) for an illustrative connection.
 Its repository names, paths, and commit are placeholders.
 
+## Upstream listeners
+
+> If DeepSeek changes how its harness implements something my repo cares about,
+> give me a PR implementing it their way.
+
+A listener connects an upstream implementation to a local concern: context compaction,
+retry behavior, plugin lifecycle, tool execution, or anything else that matters to the
+repository. It tracks relevant changes and automatically implements the upstream approach
+through the destination's own architecture and interfaces.
+
+The listener's output is a draft implementation PR with code, tests, and upstream
+provenance. Register it once; subsequent relevant changes should not need a fresh request
+to investigate or write the patch. The repository owner reviews and merges it.
+
+See the [upstream listener design](docs/upstream-listeners.md) and
+[DeepSeek Harness listener example](examples/deepseek-harness-listener.json).
+The example pins real upstream code; its destination is illustrative and it is disabled.
+
 ## Intended workflow
 
-1. Add a `memetics.json` manifest to a repository.
-2. Record the sources behind important implementation decisions and pin code sources to
-   the revisions you actually used.
-3. Check the watched upstream paths for changes since the last acknowledged revision.
-4. Receive an update containing the upstream comparison, the original rationale, and the
-   local code that may need attention.
-5. Review the change and record whether you adopted it, dismissed it, or deferred it.
+1. Record an inspiration or a prospective upstream interest in `memetics.json`.
+2. Configure a listener with the upstream implementation, the local code that cares,
+   the behavior to preserve, and the destination's validation commands.
+3. Detect upstream changes through webhooks where available, with polling otherwise.
+4. Assess the actual behavioral change and automatically adapt relevant changes in an
+   isolated checkout of the destination repository.
+5. Run checks and open or update a draft PR containing the implementation, regression
+   tests, upstream comparison, and validation evidence.
+6. Record adoption on merge, or retain the reason for declining the change.
 
-The first implementation should support GitHub code sources and scoped commit checks.
-Papers and articles can be recorded as inspirations from the start; detecting changes to
-those sources needs a separate mechanism.
+Start adaptation as soon as a relevant change is detected. Detection, generation, and
+checks determine when the PR is ready; polling cannot promise instantaneous delivery.
 
 ## Update behavior
 
-An upstream change is a prompt to investigate, not a claim that your implementation is
-broken. Updates should group changes by inspiration and avoid reporting the same revision
-repeatedly. Checking for a change must not silently mark it as reviewed.
+An upstream change is evidence to assess against the local concern. Already-adopted or
+irrelevant changes receive a recorded decision. Related changes update an existing
+proposal; duplicate events do not create duplicate PRs. Observed, proposed, and adopted
+revisions remain distinct, and human edits to generated branches must be preserved.
 
-A future scheduled GitHub Action or GitHub App could deliver a review queue through GitHub
-issues. Private sources must remain accessible only to authorized users, and notification
-content must not expose private source details in a public destination.
+A blocked adaptation retains its reason and any partial patch. Failed checks remain
+visible on the draft PR; opening it never implies that tests passed or the change merged.
+Private source content must stay within authorized destinations.
+
+Papers and articles can still be recorded as inspirations; the first listener workflow
+focuses on GitHub implementations with inspectable revisions and tests.
 
 ## Status
 
-Project brief and proposed manifest only. There is no watcher, scheduled job, or notification
-service running yet. The manifest format is exploratory, not a stable API.
+Project brief, listener design, and proposed manifests only. No listener, adaptation
+worker, or automatic PR service is running yet. The manifest format is exploratory,
+not a stable API.
