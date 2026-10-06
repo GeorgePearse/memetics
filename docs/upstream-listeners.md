@@ -10,7 +10,7 @@ and opens a pull request automatically. The useful output is working code to rev
 
 Registering an enabled listener authorizes that ongoing detection-to-PR workflow;
 it should not ask again before each adaptation. Merging remains the repository
-owner's decision. This document describes the intended product, not a running service.
+owner's decision. The CLI and service implement this workflow; see the README for setup and current bounds.
 
 ## What the user specifies
 
@@ -30,7 +30,7 @@ from it yet." A prospective relationship must not be recorded as proven past inf
 
 ## Concrete example: DeepSeek Harness
 
-The proposed [listener manifest](../examples/deepseek-harness-listener.json) watches
+The [listener manifest](../examples/deepseek-harness-listener.json) watches
 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)'s tool-result
 pruning. Its upstream paths and baseline commit are real; the downstream repository,
 paths, validation command, and desired constraints are illustrative. It is disabled
@@ -57,9 +57,10 @@ any deliberate difference from upstream.
    reconcile missed events. Enqueue immediately on detection; actual delivery
    includes detection lag, implementation time, and validation time.
 2. **Pin:** retain the immutable upstream before/after revisions, listener configuration,
-   and destination base SHA. Inspect the actual diff, affected callers, and tests.
+   and destination base SHA. Inspect the actual changed files and configured destination implementation and tests.
+   The current worker does not automatically retrieve a full call graph.
 3. **Assess relevance:** compare changed behavior with the declared concern and local
-   implementation. Paths narrow the search; symbols and meaning survive file moves.
+   implementation. Paths and symbols guide assessment; rename-aware diffs preserve file moves.
    Record a reason for irrelevant changes or behavior already present locally.
 4. **Implement:** start an isolated destination checkout, follow its repository rules,
    and adapt the upstream approach while preserving the configured local contracts.
@@ -100,7 +101,7 @@ Deduplicate deliveries by listener, upstream revision, and destination repositor
 Serialize updates for a listener and reuse its open PR when later commits extend
 the same change. Preserve human edits; if the branch has changed unexpectedly,
 reconcile before publishing. Recheck the destination base and rerun affected checks
-when it moves. Track renamed paths, coalesce bursts without losing revisions, and
+when it moves. Track renamed paths, coalesce queued bursts into a comparison spanning the skipped revisions, and
 flag force-pushes or removed branches for reconciliation rather than assuming a
 linear history. Retries resume recorded work instead of spawning duplicate PRs.
 
