@@ -1,5 +1,32 @@
 # Implementation verification
 
+## Rust rewrite (2026-10-06)
+
+The Rust binary replaces the Python package. Evidence from this branch:
+
+- `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings` and `cargo test` pass. The suite has 49 tests, plus one ignored live Jev test: all 24 Python scenarios ported (boundaries, engine, server), plus anchors, manifest, drift-policy, trigger and agent tests.
+- **State compatibility.** Registering `examples/deepseek-harness-listener.json` with the Rust and the Python implementations gives the same source id (`17ce9147…`) and config hash (`4b26997a…`). The Rust CLI also reads a Python-created state directory.
+- **CLI.** `register`, `status`, `pause`/`resume`, re-register (pause stays sticky), `search`, `show-job` and `retry` (refused for a non-blocked job, exit 2) were run against a temporary state directory.
+- **Dashboard.** `serve --port 8786` (8776 was in use by the Python service) answered `/health` 200, `/` with the dashboard, and `/api/status`. Writes without a token got 401 and an unknown job got 404. Ctrl-C shut it down cleanly.
+- **Real upstream, `run --once --force-poll`.** Three throwaway listeners watched `deepseek-ai/deepseek-harness:master`, sharing one watch, with the private `GeorgePearse/memetics-demo` as the read-only destination:
+  - The watch made one GitHub poll for all three listeners and stored the ETag; a second run made a conditional poll and enqueued nothing new.
+  - The baseline at the current head created no job.
+  - A merge-commit baseline mirrored the real repository (partial clone) and finished `irrelevant` (tree unchanged).
+  - A release baseline (300 changed files) was `blocked` at the 100-file context bound after indexing 92 blobs, which `search` then returned.
+  - No model calls were made and no PR was created; the run stopped before PR creation by design.
+- **Symbol trigger.** `memetics cite` computed `ToolResultPruner.pruneContent` at five upstream commits that edited its file (`f4a32db`, `ec3560c`, `b5e7fca`, `37abcb7`, `27bf103`) and their parents. Its normalised hash stayed `0e5c1a2e86d5cd0e` throughout, so none of those edits would trigger an adaptation.
+- **Live Jev drift checks.** These are three hand-made commits against a binary-search idea (`cargo test --test live_jev -- --ignored`):
+
+  | Commit | Jev (`typesafe-ai/jev`, Vercel AI Gateway) | Chat judge (`typesafe/jev-router`, OpenRouter) |
+  |---|---|---|
+  | Pure rename of locals | `same_idea`, 1.00 | `same_idea`, 1.00 |
+  | Overflow-safe midpoint + `match` | `refines_idea`, 0.53 (p=0.65) | `refines_idea`, 0.99 |
+  | Linear scan replaces binary search | `different_idea`, 0.89 | `different_idea`, 0.95 |
+
+  Each verdict cited anchor `a1` and its hunk(s). Jev cost about $0.0001 in total and OpenRouter under $0.10.
+
+## Python implementation (PR #1)
+
 Verified on 2026-10-06 using a private, controlled repository owned by George Pearse. No production implementation was changed or merged.
 
 ## Real upstream → real model → real draft PRs

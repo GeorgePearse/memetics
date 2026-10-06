@@ -4,9 +4,9 @@ After=network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=%h/memetics
+WorkingDirectory=%h/.local/share/memetics
 EnvironmentFile=%h/.config/memetics/runtime.env
-ExecStart=%h/memetics/.venv/bin/memetics serve --host 127.0.0.1 --port 8776 --daily-model-calls 6
+ExecStart=%h/.cargo/bin/memetics serve --host 127.0.0.1 --port 8776 --daily-model-calls 24
 Restart=on-failure
 RestartSec=5
 UMask=0077

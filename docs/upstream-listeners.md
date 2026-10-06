@@ -58,7 +58,7 @@ any deliberate difference from upstream.
    includes detection lag, implementation time, and validation time.
 2. **Pin:** retain the immutable upstream before/after revisions, listener configuration,
    and destination base SHA. Inspect the actual changed files and configured destination implementation and tests.
-   The current worker does not automatically retrieve a full call graph.
+   The adaptation agent looks up further code in both repositories on demand; it does not build a full call graph.
 3. **Assess relevance:** compare changed behavior with the declared concern and local
    implementation. Paths and symbols guide assessment; rename-aware diffs preserve file moves.
    Record a reason for irrelevant changes or behavior already present locally.
