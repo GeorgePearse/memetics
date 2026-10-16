@@ -1,0 +1,16 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "memetics"
+version = "0.1.0"
+description = "Standing upstream listeners that turn implementation changes into pull requests"
+requires-python = ">=3.11"
+readme = "README.md"
+
+[project.scripts]
+memetics = "memetics.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["memetics"]
