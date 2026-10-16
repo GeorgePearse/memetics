@@ -1,5 +1,8 @@
 # Memetics
 
+> [!NOTE]
+> Is **Memento** a better name?
+
 Trace the ideas behind your code. Turn relevant upstream implementation changes into reviewable PRs.
 
 Register a standing interest: “when DeepSeek changes how it prunes tool results, adapt the relevant behavior to my implementation.” Memetics watches only requested repositories, shares upstream fetching and indexing across listeners, and creates a separate implementation draft PR for each interested destination.
