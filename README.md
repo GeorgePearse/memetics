@@ -8,6 +8,8 @@ automated way to notice when the original drifts.
 
 Full docs: **https://georgepearse.github.io/memetics/**
 
+*(`remix` would also be a pretty good name for this — it's all about taking other people's ideas and mixing them into your own.)*
+
 ## In short
 
 1. Describe a bit of functionality in `.memetics/<slug>.md` — what it is,
