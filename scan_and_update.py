@@ -176,6 +176,13 @@ def process_meme_file(meme_path, github_token, client, model):
         if latest is None or latest == last_seen:
             continue
 
+        if last_seen is None:
+            # First run for this upstream entry: nothing to diff against yet.
+            # Record the current HEAD as the baseline and move on.
+            up["last_seen"] = latest
+            any_advanced = True
+            continue
+
         for path in paths:
             old_content = file_content_at_ref(github_token, repo, path, last_seen)
             new_content = file_content_at_ref(github_token, repo, path, latest)
