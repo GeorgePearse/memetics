@@ -1,0 +1,47 @@
+name: 'Memetics'
+description: 'Detect upstream pattern drift and draft an LLM-generated update to your local implementation.'
+author: 'George Pearse'
+branding:
+  icon: 'refresh-cw'
+  color: 'purple'
+inputs:
+  anthropic-api-key:
+    description: 'Anthropic API key used to generate the update.'
+    required: true
+  github-token:
+    description: 'Token used to read upstream repo commit history and file content.'
+    required: false
+    default: ${{ github.token }}
+  model:
+    description: 'Claude model id to use for generating updates.'
+    required: false
+    default: 'claude-opus-5'
+  paths:
+    description: 'Glob (relative to the checkout) for meme files to scan.'
+    required: false
+    default: '.memetics/**/*.md'
+outputs:
+  changed:
+    description: '"true" if any local file was updated, else "false".'
+    value: ${{ steps.run.outputs.changed }}
+  summary:
+    description: 'Human-readable summary of what changed, suitable for a PR body.'
+    value: ${{ steps.run.outputs.summary }}
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Install dependencies
+      shell: bash
+      run: pip install -q -r "${{ github.action_path }}/requirements.txt"
+    - id: run
+      name: Scan for upstream drift and update
+      shell: bash
+      run: python "${{ github.action_path }}/scan_and_update.py"
+      env:
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        MEMETICS_MODEL: ${{ inputs.model }}
+        MEMETICS_PATHS: ${{ inputs.paths }}
